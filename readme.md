@@ -11,7 +11,7 @@ Pepperss IDE runs on **Python 2.7.18** .  You will need to install this and run 
 ## Connections
 Connect to the following network to access Pepper
 - GL-MT3000-4ec / GL-MT3000-4ec-5G
-- network PW = EZMD2ARN49
+- network PW = 
 
 ## Expectations
 
