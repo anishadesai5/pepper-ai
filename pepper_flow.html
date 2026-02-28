@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pepper Robot – Program Flow</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f1117;
+    color: #e0e0e0;
+    padding: 30px 20px;
+  }
+  h1 {
+    text-align: center;
+    color: #7ec8e3;
+    font-size: 22px;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 30px;
+  }
+
+  /* ---- LAYOUT ---- */
+  .diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ---- NODES ---- */
+  .node {
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+    min-width: 180px;
+    max-width: 220px;
+    line-height: 1.5;
+  }
+  .node.start    { background: #1e3a5f; border: 2px solid #7ec8e3; color: #7ec8e3; border-radius: 50px; }
+  .node.process  { background: #1a2636; border: 2px solid #4a90d9; color: #c8e0f4; }
+  .node.decision { background: #2a1f3d; border: 2px solid #9b7fd4; color: #d4b8f7; border-radius: 0; transform: none; min-width: 200px; }
+  .node.action   { background: #1a2e1a; border: 2px solid #5cb85c; color: #a8e6a8; }
+  .node.api      { background: #2a2010; border: 2px solid #e8a020; color: #f5d078; }
+  .node.hardware { background: #2a1515; border: 2px solid #e05050; color: #f4a0a0; }
+  .node.event    { background: #1a2030; border: 2px solid #50a0d0; color: #90c8f0; border-radius: 50px; }
+  .node.end      { background: #1e3a5f; border: 2px solid #7ec8e3; color: #7ec8e3; border-radius: 50px; }
+
+  /* ---- ARROWS ---- */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .arrow-line {
+    width: 2px;
+    background: #555;
+    height: 20px;
+  }
+  .arrow-head {
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #555;
+  }
+  .arrow-label {
+    font-size: 10px;
+    color: #aaa;
+    background: #0f1117;
+    padding: 0 4px;
+    margin: -2px 0;
+    z-index: 1;
+  }
+
+  /* ---- SECTIONS ---- */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #555;
+    margin: 18px 0 6px;
+    text-align: center;
+  }
+
+  /* ---- HORIZONTAL SPLIT (parallel flows) ---- */
+  .row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 30px;
+    justify-content: center;
+    width: 100%;
+    max-width: 860px;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    flex: 1;
+  }
+  .col-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #666;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  /* ---- LOOP BRACKET ---- */
+  .loop-box {
+    border: 1px dashed #444;
+    border-radius: 10px;
+    padding: 14px 12px 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    max-width: 320px;
+  }
+  .loop-tag {
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    background: #0f1117;
+    padding: 0 6px;
+    font-size: 10px;
+    color: #666;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* ---- SIDE EVENTS BOX ---- */
+  .events-box {
+    border: 1px dashed #50a0d0;
+    border-radius: 10px;
+    padding: 12px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .events-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #50a0d0;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  /* ---- TOOL CALLS BOX ---- */
+  .tools-box {
+    border: 1px dashed #e8a020;
+    border-radius: 10px;
+    padding: 12px;
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .tools-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #e8a020;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .divider {
+    width: 2px;
+    background: #333;
+    align-self: stretch;
+    min-height: 80px;
+  }
+
+  .note {
+    font-size: 10px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    max-width: 300px;
+    margin: 4px 0;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-top: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge.whisper { background: #2a4020; color: #80c860; }
+  .badge.gpt { background: #2a2010; color: #e8a020; }
+  .badge.naoqi { background: #2a1515; color: #f08080; }
+  .badge.local { background: #1a2030; color: #6090c0; }
+</style>
+</head>
+<body>
+
+<h1>🤖 PEPPER ROBOT — PROGRAM FLOW</h1>
+<p class="subtitle">main.py · chatGPT.py · myPepper.py · recordAudio4.py</p>
+
+<div class="diagram">
+
+  <!-- ===== STARTUP ===== -->
+  <div class="section-label">⚙ STARTUP</div>
+
+  <div class="node start">main.py starts</div>
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <div class="node process">Load .env<br><small>API keys · Pepper IP · personalities · behaviors</small></div>
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <div class="node hardware">Connect to Pepper via ALBroker <span class="badge naoqi">NAOqi</span><br><small>PIP:PPORT · myPepper init</small></div>
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+  <div class="row" style="max-width:600px; align-items:flex-start;">
+    <div class="col">
+      <div class="col-label">Hardware Init</div>
+      <div class="node hardware" style="min-width:160px;font-size:11px;">Wake Pepper up<br>ALMotion.wakeUp()</div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="node hardware" style="min-width:160px;font-size:11px;">Set voice<br>naoenu</div>
+    </div>
+    <div class="col">
+      <div class="col-label">Event Listeners</div>
+      <div class="node event" style="min-width:160px;font-size:11px;">PersonDetector<br>JustArrived · JustLeft</div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="node event" style="min-width:160px;font-size:11px;">HeadTapped<br>FrontTactilTouched</div>
+    </div>
+    <div class="col">
+      <div class="col-label">Initial Checks</div>
+      <div class="node api" style="min-width:160px;font-size:11px;">📷 Capture image<br>→ GPT-4o Vision <span class="badge gpt">async</span></div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="node process" style="min-width:160px;font-size:11px;">🎙 Ambient<br>sound check</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line" style="height:28px;"></div><div class="arrow-head"></div></div>
+
+  <!-- ===== INTERRUPT EVENTS ===== -->
+  <div class="section-label">⚡ INTERRUPT EVENTS (run at any time)</div>
+
+  <div class="row" style="max-width:760px; align-items:flex-start;">
+    <div class="col">
+      <div class="events-box">
+        <div class="events-title">HEAD TAPPED</div>
+        <div class="node decision" style="font-size:11px; min-width:160px;">ISNEAR?</div>
+        <div style="display:flex; gap:20px; margin-top:8px;">
+          <div class="col" style="align-items:center;">
+            <div class="note">YES</div>
+            <div class="node hardware" style="font-size:10px; min-width:120px;">Say goodbye<br>tickle animation<br>ISNEAR = False<br>tts.stopAll()</div>
+          </div>
+          <div class="col" style="align-items:center;">
+            <div class="note">NO</div>
+            <div class="node action" style="font-size:10px; min-width:120px;">reset_chat()<br>"Ahh" greeting<br>TouchHead anim<br>ISNEAR = True</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col" style="justify-content:center; padding-top:40px;">
+      <div class="note" style="font-size:12px; color:#555;">← both events<br>can interrupt<br>the main loop<br>at any time →</div>
+    </div>
+
+    <div class="col">
+      <div class="events-box">
+        <div class="events-title">PERSON DETECTED</div>
+        <div class="node event" style="font-size:11px; min-width:160px;">JustArrived<br><small style="color:#666;">(currently logs only)</small></div>
+        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+        <div class="node event" style="font-size:11px; min-width:160px;">JustLeft<br><small style="color:#666;">(currently logs only)</small></div>
+        <div class="note" style="margin-top:6px;">* Greeting/goodbye logic<br>stubbed — activate later</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line" style="height:28px;"></div><div class="arrow-head"></div></div>
+
+  <!-- ===== MAIN LOOP ===== -->
+  <div class="section-label">🔁 MAIN LOOP (while True)</div>
+
+  <div class="loop-box">
+    <div class="loop-tag">LOOP — 0.5s tick</div>
+
+    <div class="node decision">ISNEAR == True?</div>
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-label">YES</div><div class="arrow-head"></div></div>
+
+    <div class="node hardware">Stop animations<br><small>pepperAnnimation(False)</small> <span class="badge naoqi">NAOqi</span></div>
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+    <div class="node action">🎙 Record Audio<br><small>recordAudio4.record_audio()</small> <span class="badge local">local mic</span><br><small>VAD · ambient threshold · silence detect</small></div>
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+    <div class="node hardware">Resume animations<br><small>pepperAnnimation(True)</small></div>
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+    <div class="row" style="gap:20px; max-width:580px;">
+      <div class="col">
+        <div class="col-label">Parallel: Thinking Thread</div>
+        <div class="node process" style="min-width:160px; font-size:11px;">Center head<br>Every 3s: say thinking phrase<br>+ gesture animation</div>
+        <div class="note">runs until transcription done</div>
+      </div>
+      <div class="col">
+        <div class="col-label">Main Thread</div>
+        <div class="node api" style="min-width:160px; font-size:11px;">🔤 Whisper Transcription<br>transcribe_audio_file()<br><span class="badge whisper">Whisper API</span></div>
+        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+        <div class="node process" style="min-width:160px; font-size:11px;">Get .text from result<br>Delete audio file</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-label">Stop thinking thread</div><div class="arrow-head"></div></div>
+
+    <div class="node decision">Still ISNEAR?</div>
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-label">YES</div><div class="arrow-head"></div></div>
+
+    <!-- GPT STREAMING BOX -->
+    <div class="tools-box">
+      <div class="tools-title">💬 chat_with_gpt_stream_behaviors() — chatGPT.py</div>
+
+      <div class="node process" style="font-size:11px; max-width:380px;">filter_text(message) · append to conversation · start_rotate_eyes_thread()</div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+      <div class="node api" style="font-size:11px; max-width:380px;">POST to GPT-4o with tools [ perform_behavior · change_personality ] <span class="badge gpt">GPT-4o stream</span></div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+      <div class="node process" style="font-size:11px; max-width:380px;">Parse SSE chunks<br>Accumulate text tokens + tool_calls</div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+      <div class="node decision" style="font-size:11px; max-width:380px;">Sentence boundary (. ! ?) hit?</div>
+
+      <div class="row" style="gap:16px; max-width:540px; margin-top:8px;">
+        <div class="col">
+          <div class="note">YES</div>
+          <div class="node hardware" style="font-size:10px; min-width:140px;">Stop eye rotation<br>Set eye color by personality<br>have_pepper_say(sentence) <span class="badge naoqi">NAOqi</span></div>
+        </div>
+        <div class="col">
+          <div class="note">TOOL CALL received</div>
+          <div class="node api" style="font-size:10px; min-width:140px;">Accumulate tool name<br>+ arguments across chunks</div>
+        </div>
+      </div>
+
+      <div class="arrow"><div class="arrow-line" style="height:24px;"></div><div class="arrow-label">Stream ends</div><div class="arrow-head"></div></div>
+
+      <div class="node decision" style="font-size:11px; max-width:380px;">Tool was called?</div>
+
+      <div class="row" style="gap:16px; max-width:540px; margin-top:8px; align-items:flex-start;">
+        <div class="col">
+          <div class="note">perform_behavior</div>
+          <div class="node hardware" style="font-size:10px; min-width:150px;">launchAndStopBehavior()<br>in background thread <span class="badge naoqi">NAOqi</span><br><small>fist bump · dance · hug etc.</small></div>
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="node api" style="font-size:10px; min-width:150px;">2nd GPT request<br>tool_choice=none<br>→ verbal response <span class="badge gpt">GPT-4o</span></div>
+        </div>
+        <div class="col">
+          <div class="note">change_personality</div>
+          <div class="node action" style="font-size:10px; min-width:150px;">Update globals<br>PREPROMPT · PERSONALITY<br>ALLPREPROMPT<br>reset_chat()<br>re-add user message</div>
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="node api" style="font-size:10px; min-width:150px;">2nd GPT request<br>tool_choice=none<br>→ verbal response <span class="badge gpt">GPT-4o</span></div>
+        </div>
+        <div class="col">
+          <div class="note">No tool</div>
+          <div class="node action" style="font-size:10px; min-width:120px;">Append full reply<br>to conversation<br>Return "done"</div>
+        </div>
+      </div>
+
+    </div>
+    <!-- END GPT BOX -->
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+    <div class="note" style="color:#555;">ISNEAR==False → skip, sleep 0.5s, loop again ↑</div>
+
+  </div>
+  <!-- END LOOP BOX -->
+
+  <div class="arrow"><div class="arrow-line" style="height:28px;"></div><div class="arrow-head"></div></div>
+
+  <!-- ===== BACKGROUND: VISION ===== -->
+  <div class="section-label">🌐 BACKGROUND — VISION (every 15 min)</div>
+
+  <div class="row" style="max-width:600px;">
+    <div class="col">
+      <div class="node hardware" style="font-size:11px;">get_pepper_image_as_base64()<br>ALVideoDevice.getImageRemote() <span class="badge naoqi">NAOqi</span><br>→ base64 JPEG</div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="node api" style="font-size:11px;">get_description_of_image_as_base64()<br>POST image to GPT-4o Vision <span class="badge gpt">GPT-4o</span><br>Returns text description</div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="node action" style="font-size:11px;">Update globals<br>IMAGE_PREPROMPT · ALLPREPROMPT<br>update_conversation_preprompt()</div>
+    </div>
+    <div class="col" style="justify-content:center;">
+      <div class="note" style="font-size:11px; color:#888; max-width:180px;">Runs in background thread so it never blocks conversation. Pepper now "knows" what it sees and can reference it in chat.</div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line" style="height:28px;"></div><div class="arrow-head"></div></div>
+
+  <!-- ===== KEY COMPONENTS ===== -->
+  <div class="section-label">📦 KEY FILES</div>
+
+  <div class="row" style="max-width:800px; flex-wrap:wrap; gap:10px;">
+    <div class="node process" style="min-width:150px; font-size:11px;">main.py<br><small>Orchestrator · event loop · threads</small></div>
+    <div class="node api" style="min-width:150px; font-size:11px;">chatGPT.py<br><small>All OpenAI API calls · conversation state</small></div>
+    <div class="node hardware" style="min-width:150px; font-size:11px;">myPepper.py<br><small>NAOqi hardware wrapper · TTS · LEDs · behaviors</small></div>
+    <div class="node action" style="min-width:150px; font-size:11px;">recordAudio4.py<br><small>Mic input · VAD · ambient calibration</small></div>
+    <div class="node event" style="min-width:150px; font-size:11px;">sharedVars.py<br><small>ISNEAR · ISRECORDING global state</small></div>
+    <div class="node process" style="min-width:150px; font-size:11px;">OverrideBtn.py<br><small>Tkinter GUI mic override button</small></div>
+  </div>
+
+</div><!-- end diagram -->
+
+<p style="text-align:center; color:#333; font-size:10px; margin-top:30px;">Pepper Robot – Deloitte Hack-2-Hire 2026</p>
+
+</body>
+</html>

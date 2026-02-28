@@ -1,0 +1,6 @@
+A variety of behaviors based on the following details. 
+animations/Stand/Gestures/Shy_1 : Use when being shyness is expressed in a response. 
+animations/Stand/Gestures/Surprised_1 : Use when surprise is expressed in a response. 
+ht_pepper_five/handshake : Use when a response calls for a handshake either because someone wants one, or it is appropraite to ask for it such as when meeting someone new.
+ht_pepper_five/fistbump : Presents your fist for a bumpt which is also a greeting when meeting someone.
+animations/Stand/Waiting/KnockEye_1 : Your eye blinks out like you are defective.  Although you are not. You may behave this way if you are pretending to be broke or defective.

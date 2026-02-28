@@ -1,0 +1,2 @@
+ISNEAR = True
+ISRECORDING = False
